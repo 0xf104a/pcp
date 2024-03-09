@@ -4,7 +4,7 @@ use crate::writer::Writer;
 
 pub type DynBuffer = Vec<u8>;
 
-pub async fn copy(reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
+pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
             mut progress: Box<dyn ProgressDisplay>,
             max_chunks_staged: usize,
             chunk_size: usize){
