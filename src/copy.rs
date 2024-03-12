@@ -4,6 +4,20 @@ use crate::writer::Writer;
 
 pub type DynBuffer = Vec<u8>;
 
+trait Buffer{
+    fn make_buffer(size: usize) -> Self where Self: Sized;
+}
+
+impl Buffer for DynBuffer{
+    fn make_buffer(size: usize) -> DynBuffer {
+        let mut buffer = DynBuffer::with_capacity(size);
+        for _ in 0..size{
+            buffer.push(0);
+        }
+        buffer
+    }
+}
+
 pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
             mut progress: Box<dyn ProgressDisplay>,
             max_chunks_staged: usize,
@@ -13,9 +27,10 @@ pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
     let size = reader.get_size();
     progress.set_size(size);
     let read_coroutine = async move{
-        let mut buffer = DynBuffer::with_capacity(chunk_size);
+        let mut buffer = DynBuffer::make_buffer(chunk_size);
         loop {
             let bytes_read = reader.read_chunk(&mut buffer, chunk_size).await;
+            //println!("{}", bytes_read);
             if bytes_read == 0{
                 tx.send(None).await.expect("Can not send buffer");
                 break;

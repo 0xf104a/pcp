@@ -1,11 +1,12 @@
 use async_trait::async_trait;
 use regex::Regex;
-use tokio::fs::File;
+use tokio::fs::{File, OpenOptions};
 use tokio::io::AsyncWriteExt;
 use crate::copy::DynBuffer;
 use crate::utils::runtime::tokio_block_on;
 use crate::writer::Writer;
 
+#[allow(dead_code)]
 pub struct FileWriter{
     path: String,
     file: File,
@@ -18,7 +19,11 @@ impl Writer for FileWriter{
             panic!("Can not read url {url}");
         }
         let open_coroutine = async {
-            File::open(url).await
+            OpenOptions::new()
+                .write(true)
+                .create(true)
+                .create_new(true)
+                .open(url).await
         };
 
        FileWriter {

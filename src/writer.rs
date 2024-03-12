@@ -1,7 +1,6 @@
-mod file;
+pub mod file;
 
 use async_trait::async_trait;
-use tokio::fs::File;
 use crate::copy::DynBuffer;
 
 #[async_trait]

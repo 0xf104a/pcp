@@ -1,22 +1,28 @@
+use colored::Colorize;
 use crate::progress::ProgressDisplay;
 
 pub struct ConsoleProgress{
     bytes_total: usize,
     bytes_out: usize,
     status: String,
+    last_precise_update: u64,
 }
 
 impl ConsoleProgress {
     fn print_progress(&self){
-        print!("{} [", &self.status);
-        let num_bricks = 50 * self.bytes_out / self.bytes_out;
+        //Guard against 0 sized things
+        if self.bytes_total == 0{
+            return;
+        }
+        print!("{}{} {}", "".clear(), &self.status, "[".bold());
+        let num_bricks = 50 * self.bytes_out / self.bytes_total;
         for _ in 0..num_bricks{
-            print!("#");
+            print!("{}", "#".green());
         }
         for _ in 0..(50 - num_bricks){
             print!(" ");
         }
-        print!("]");
+        print!("{}{}\r", "".clear(), "]".bold());
     }
 }
 
@@ -26,6 +32,7 @@ impl ProgressDisplay for ConsoleProgress {
             bytes_out: 0,
             bytes_total: 0,
             status: String::from(""),
+            last_precise_update: 0,
         }
     }
     fn set_progress(&mut self, status: &str, bytes_out: usize) {

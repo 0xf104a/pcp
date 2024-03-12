@@ -1,7 +1,5 @@
 use std::os::unix::fs::MetadataExt;
-use std::path::Path;
 use async_trait::async_trait;
-use crate::copy::DynBuffer;
 use crate::reader::Reader;
 use tokio::fs::File;
 use regex::Regex;
@@ -35,9 +33,16 @@ impl Reader for FileReader{
 
     fn get_size(&self) -> usize {
         let metadata = std::fs::metadata(&self.path).expect("Can not read metadata");
+        //println!("size={}", metadata.size());
         metadata.size() as usize
     }
-    async fn read_chunk(&mut self, buffer: &mut DynBuffer, _max_size: usize) -> usize {
+
+    fn get_blocksize(&self) -> usize {
+        let metadata = std::fs::metadata(&self.path).expect("Can not read metadata");
+        metadata.blksize() as usize
+    }
+    
+    async fn read_chunk(&mut self, buffer: &mut [u8], _max_size: usize) -> usize {
         self.file.read(buffer).await.expect("Can not read file")
     }
 }

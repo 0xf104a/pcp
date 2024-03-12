@@ -1,4 +1,4 @@
-mod console;
+pub mod console;
 
 pub trait ProgressDisplay {
      fn new() -> Self where Self: Sized;

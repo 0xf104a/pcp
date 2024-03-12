@@ -26,6 +26,7 @@ pub fn tokio_block_on<F: Future>(f: F) -> F::Output {
     RUNTIME.with(|rt| { rt.try_lock().unwrap().as_mut().unwrap().block_on(f) })
 }
 
+#[allow(dead_code)]
 #[inline]
 pub fn tokio_spawn<F: Future + std::marker::Send + 'static>(f: F)
     where
