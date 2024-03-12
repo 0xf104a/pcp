@@ -41,7 +41,7 @@ impl Reader for FileReader{
         let metadata = std::fs::metadata(&self.path).expect("Can not read metadata");
         metadata.blksize() as usize
     }
-    
+
     async fn read_chunk(&mut self, buffer: &mut [u8], _max_size: usize) -> usize {
         self.file.read(buffer).await.expect("Can not read file")
     }
