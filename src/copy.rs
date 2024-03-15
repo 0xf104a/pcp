@@ -48,6 +48,7 @@ pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
             writer.write_chunk(&chunk).await;
             progress.add_bytes_written(n);
         }
+        progress.flush();
     };
     let _ = tokio::join!(read_coroutine, write_coroutine);
 }

@@ -1,13 +1,34 @@
+use std::cmp::min;
 use colored::Colorize;
+use termion::terminal_size;
 
 use crate::progress::ProgressDisplay;
 use crate::utils::get_time;
+
+const MAX_STATUS_WIDTH: u16 = 128;
+const STATUS_WIDTH_FACTOR: f32 = 0.2;
 
 pub struct ConsoleProgress{
     bytes_total: usize,
     bytes_out: usize,
     status: String,
     last_precise_update: u128,
+}
+
+fn pad_status(status: String, max_width: u16) -> String {
+    let status_len = status.len();
+    let max_width = max_width as usize;
+
+    if status_len >= max_width {
+        if max_width <= 3 {
+            return "...".to_string();
+        }
+        let half_width = (max_width - 3) / 2;
+        let end_start = status_len - half_width + (max_width - 3) % 2;
+        return format!("{}...{}", &status[..half_width], &status[end_start..]);
+    }
+
+    format!("{:width$}", status, width = max_width)
 }
 
 impl ConsoleProgress {
@@ -17,20 +38,31 @@ impl ConsoleProgress {
         if current_time - self.last_precise_update < 40{
             return;
         }
-        self.last_precise_update = current_time;
         //Guard against 0 sized things
         if self.bytes_total == 0{
             return;
         }
-        print!("{}{} {}", "".clear(), &self.status, "[".bold());
-        let num_bricks = 50 * self.bytes_out / self.bytes_total;
+
+        //Scale our progressbar
+        let (size_rows, _) = terminal_size()
+            .expect("Can not read terminal size");
+        let console_width = min(MAX_STATUS_WIDTH, size_rows);
+        let status_width = (STATUS_WIDTH_FACTOR * (console_width as f32)) as u16;
+        let progress_bar_width =
+            console_width - status_width - 6; // 4 symbols for percentage, 2 for brackets
+        //Store last update time
+        self.last_precise_update = current_time;
+        //Output everything
+        print!("{}{} {}", "".clear(), &pad_status(self.status.clone(), status_width), "[".bold());
+        let num_bricks = (progress_bar_width as usize * self.bytes_out) / self.bytes_total;
+        //println!("{}", num_bricks);
         for _ in 0..num_bricks{
             print!("{}", "#".green());
         }
-        for _ in 0..(50 - num_bricks){
+        for _ in 0..(progress_bar_width as usize - num_bricks){
             print!(" ");
         }
-        print!("{}{}\r", "".clear(), "]".bold());
+        print!("{}{} {}%\r", "".clear(), "]".bold(), 100 * self.bytes_out / self.bytes_total);
     }
 }
 
@@ -62,5 +94,15 @@ impl ProgressDisplay for ConsoleProgress {
     fn set_size(&mut self, bytes_total: usize) {
         self.bytes_total = bytes_total;
         self.print_progress();
+    }
+
+    fn flush(&self) {
+        let (size_rows, _) = terminal_size()
+            .expect("Can not read terminal size");
+        print!("\r");
+        for _ in 0..size_rows - 1{
+            print!(" ")
+        }
+        print!("\r");
     }
 }

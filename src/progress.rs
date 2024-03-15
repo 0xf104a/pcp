@@ -6,4 +6,5 @@ pub trait ProgressDisplay {
      fn update_status(&mut self, new_status: &str);
      fn add_bytes_written(&mut self, bytes_written: usize);
      fn set_size(&mut self, bytes_total: usize);
+     fn flush(&self);
  }

@@ -14,3 +14,4 @@ log = "0.4.21"
 futures = "0.3.30"
 clap = { version = "4.5.2", features = ["derive"] }
 colored = "2.1.0"
+termion = "3.0.0"

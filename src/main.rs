@@ -38,8 +38,9 @@ fn main() {
     for source in sources{
         let writer = Box::new(FileWriter::new(&args.dest));
         let reader = Box::new(FileReader::new(&source));
-        let progress = Box::new(ConsoleProgress::new());
+        let mut progress = Box::new(ConsoleProgress::new());
         let buffer_size = reader.get_blocksize();
+        progress.update_status(&*format!("{} -> {}", source, args.dest));
         let coroutine = async move { 
             copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
         };
