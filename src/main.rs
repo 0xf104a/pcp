@@ -18,6 +18,7 @@ use crate::writer::Writer;
 use crate::progress::ProgressDisplay;
 use crate::utils::runtime::{init_tokio, tokio_block_on};
 use crate::copy as copy_file;
+use crate::progress::dummy::DummyProgress;
 
 
 fn main() {
@@ -38,7 +39,11 @@ fn main() {
     for source in sources{
         let writer = Box::new(FileWriter::new(&args.dest));
         let reader = Box::new(FileReader::new(&source));
-        let mut progress = Box::new(ConsoleProgress::new());
+        let mut progress = if args.no_progress {
+            Box::new(DummyProgress::new()) as Box<dyn ProgressDisplay>
+        } else {
+            Box::new(ConsoleProgress::new()) as Box<dyn ProgressDisplay>
+        };
         let buffer_size = reader.get_blocksize();
         progress.update_status(&*format!("{} -> {}", source, args.dest));
         let coroutine = async move { 
