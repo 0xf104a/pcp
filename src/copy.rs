@@ -45,7 +45,7 @@ pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
                 break;
             }
             let (n, chunk) = chunk_wrapped.unwrap();
-            writer.write_chunk(&chunk).await;
+            writer.write_chunk(&chunk, n).await;
             progress.add_bytes_written(n);
         }
         progress.flush();

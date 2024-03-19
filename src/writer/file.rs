@@ -45,7 +45,11 @@ impl Writer for FileWriter{
         re.is_match(url)
     }
 
-    async fn write_chunk(&mut self, chunk: &DynBuffer) {
-        self.file.write(chunk).await.expect("Can not write file");
+    async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) {
+        if chunk.len() == size {
+            self.file.write(chunk).await.expect("Can not write file");
+        } else { //chunk.len() > size
+            self.file.write(&chunk[0..size]).await.expect("Can not write file");
+        }
     }
 }

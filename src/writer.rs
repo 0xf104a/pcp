@@ -7,5 +7,5 @@ use crate::copy::DynBuffer;
 pub trait Writer{
     fn new(url: &str) -> Self where Self: Sized; 
     fn can_write(url: &str) -> bool where Self: Sized;
-    async fn write_chunk(&mut self, chunk: &DynBuffer);
+    async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize);
 }
