@@ -14,7 +14,7 @@ pub struct FileReader{
 #[async_trait]
 impl Reader for FileReader{
     fn can_read(url: &str) -> bool where Self: Sized {
-        let re = Regex::new(r"^(/[^/\\0]+)+/?$").unwrap();
+        let re = Regex::new(r"^(/[^/\\0]+)+/?$|^[^/\\0]+$").unwrap();
         re.is_match(url)
     }
     fn new(url: &str) -> Self where Self: Sized {

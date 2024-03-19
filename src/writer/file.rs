@@ -19,11 +19,19 @@ impl Writer for FileWriter{
             panic!("Can not read url {url}");
         }
         let open_coroutine = async {
-            OpenOptions::new()
-                .write(true)
-                .create(true)
-                .create_new(true)
-                .open(url).await
+            if std::path::Path::new(url).exists(){
+                OpenOptions::new()
+                    .write(true)
+                    .create(true)
+                    .open(url).await
+                
+            } else {
+                OpenOptions::new()
+                    .write(true)
+                    .create(true)
+                    .create_new(true)
+                    .open(url).await
+            }
         };
 
        FileWriter {
@@ -33,7 +41,7 @@ impl Writer for FileWriter{
     }
 
     fn can_write(url: &str) -> bool where Self: Sized {
-        let re = Regex::new(r"^(/[^/\\0]+)+/?$").unwrap();
+        let re = Regex::new(r"^(/[^/\\0]+)+/?$|^[^/\\0]+$").unwrap();
         re.is_match(url)
     }
 
