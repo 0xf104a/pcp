@@ -23,6 +23,7 @@ impl Writer for FileWriter{
                 OpenOptions::new()
                     .write(true)
                     .create(true)
+                    .truncate(true)
                     .open(url).await
                 
             } else {
