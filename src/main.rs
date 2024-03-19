@@ -31,6 +31,10 @@ fn main() {
             println!("{}{}: Can not read file", source.bold(), "".clear());
         }
     }
+    if sources.len() > 1 && !FileWriter::is_directory(&args.dest){
+        println!("{}{}: Is not a directory", args.dest.bold(), "".clear());
+        exit(255);
+    }
     if !FileWriter::can_write(&args.dest){
         println!("{}{}: Can not write file", args.dest.bold(), "".clear());
         exit(255);

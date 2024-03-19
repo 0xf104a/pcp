@@ -25,7 +25,7 @@ impl Writer for FileWriter{
                     .create(true)
                     .truncate(true)
                     .open(url).await
-                
+
             } else {
                 OpenOptions::new()
                     .write(true)
@@ -41,9 +41,15 @@ impl Writer for FileWriter{
         }
     }
 
+    #[inline]
     fn can_write(url: &str) -> bool where Self: Sized {
         let re = Regex::new(r"^(/[^/\\0]+)+/?$|^[^/\\0]+$").unwrap();
         re.is_match(url)
+    }
+
+    #[inline]
+    fn is_directory(url: &str) -> bool where Self: Sized {
+        std::path::Path::new(url).is_dir()
     }
 
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) {
