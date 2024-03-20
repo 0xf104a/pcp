@@ -25,6 +25,10 @@ fn main() {
     let args = Args::parse();
     let mut sources = Vec::<String>::new();
     for source in args.srcs {
+        if FileReader::is_directory(&source) && !args.recursive{
+            println!("{}{}: Is a directory, but recursive flag is not set, skipping", source.bold(), 
+                     "".clear());
+        }
         if FileReader::can_read(&source){
             sources.push(source)
         } else {

@@ -31,6 +31,11 @@ impl Reader for FileReader{
         }
     }
 
+    #[inline]
+    fn is_directory(url: &str) -> bool where Self: Sized {
+        std::path::Path::new(url).is_dir()
+    }
+
     fn get_size(&self) -> usize {
         let metadata = std::fs::metadata(&self.path).expect("Can not read metadata");
         //println!("size={}", metadata.size());
