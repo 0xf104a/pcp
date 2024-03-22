@@ -81,7 +81,7 @@ pub trait Reader{
     ///
     /// Creates directory iterator
     /// 
-    fn iter_directory(&self, url: &str) -> Box<dyn GenericIterator<String>>;
+    fn iter_directory(url: &str) -> Box<dyn GenericIterator<String>> where Self: Sized;
     
     ///
     /// Reads chunk from file. Chunk is limited by given 

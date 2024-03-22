@@ -11,6 +11,7 @@ pub trait GenericIterator<T>{
 impl<T> Iterator for dyn GenericIterator<T> {
     type Item = T;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         self.internal_next() as Option<Self::Item>
     }

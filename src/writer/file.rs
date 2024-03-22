@@ -1,3 +1,4 @@
+use std::path::Path;
 use async_trait::async_trait;
 use regex::Regex;
 use tokio::fs::{File, OpenOptions};
@@ -6,7 +7,6 @@ use crate::copy::DynBuffer;
 use crate::utils::runtime::tokio_block_on;
 use crate::writer::Writer;
 
-#[allow(dead_code)]
 pub struct FileWriter{
     path: String,
     file: File,
@@ -49,12 +49,12 @@ impl Writer for FileWriter{
 
     #[inline]
     fn is_directory(url: &str) -> bool where Self: Sized {
-        std::path::Path::new(url).is_dir()
+        Path::new(url).is_dir()
     }
-
+    
     #[inline]
     fn make_directory(url: &str) where Self: Sized {
-        todo!()
+        std::fs::create_dir_all(Path::new(url)).expect("Can not create directory")
     }
 
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) {

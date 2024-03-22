@@ -25,10 +25,13 @@ impl DirectoryIteratorState {
     pub fn new(path: String) -> DirectoryIteratorState{
         let path = Path::new(&path);
         let objects = if path.is_file(){
-            path.iter().map(|x| x.to_os_string()).collect()
-        } else {
             vec![OsString::from(&path)]
+        } else {
+            std::fs::read_dir(path).expect("Can not read directory")
+                .map(|x| {x.unwrap().path().into_os_string()})
+                .collect()
         };
+        println!("path {:?} has objects {:?}", path, objects);
         DirectoryIteratorState{
             objects,
             current_object: 0,
@@ -72,22 +75,25 @@ impl GenericIterator<String> for DirectoryIterator{
             return None;
         }
         let mut next_object = self.state_stack.last_mut().unwrap().next_object();
-        while next_object.is_none() && self.state_stack.len() > 0{
+        println!("next_object={:?}", next_object);
+        while next_object.is_none() && self.state_stack.len() > 1{
             self.state_stack.pop();
             next_object = self.state_stack.last_mut().unwrap().next_object();
         }
         if next_object.is_none(){
+            println!("No more objects through stack");
             return None;
         }
         let path_os_string = next_object.unwrap();
         let path_string = path_os_string.to_str().unwrap().to_string();
         let path = Path::new(&path_os_string);
         if path.is_dir(){
+            println!("{:?} is dir, {:?}", path, path_string);
             let mut state = DirectoryIteratorState::new(path_string);
-            if state.len() == 0{
-                return self.internal_next();
-            }
-            return Some(state.next_object().unwrap().to_str().unwrap().to_string());
+            let result = Some(state.next_object().unwrap().to_str().unwrap().to_string());
+            println!("result is {:?}", result);
+            self.state_stack.push(state);
+            return result;
         }
         Some(path_string)
     }
@@ -132,7 +138,7 @@ impl Reader for FileReader{
     }
 
     #[inline]
-    fn iter_directory(&self, url: &str) -> Box<dyn GenericIterator<String>>{
+    fn iter_directory(url: &str) -> Box<dyn GenericIterator<String>>{
         Box::new(DirectoryIterator::new(url))
     }
 

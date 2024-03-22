@@ -6,7 +6,7 @@ mod reader;
 mod writer;
 mod progress;
 mod copy;
-pub mod utils;
+mod utils;
 mod arguments;
 
 use crate::arguments::Args;
@@ -28,6 +28,7 @@ fn main() {
         if FileReader::is_directory(&source) && !args.recursive{
             println!("{}{}: Is a directory, but recursive flag is not set, skipping", source.bold(), 
                      "".clear());
+            continue;
         }
         if FileReader::can_read(&source){
             sources.push(source)
@@ -45,18 +46,24 @@ fn main() {
     }
     init_tokio();
     for source in sources{
-        let writer = Box::new(FileWriter::new(&args.dest));
-        let reader = Box::new(FileReader::new(&source));
-        let mut progress = if args.no_progress {
-            Box::new(DummyProgress::new()) as Box<dyn ProgressDisplay>
+        if !FileReader::is_directory(&source) {
+            let writer = Box::new(FileWriter::new(&args.dest));
+            let reader = Box::new(FileReader::new(&source));
+            let mut progress = if args.no_progress {
+                Box::new(DummyProgress::new()) as Box<dyn ProgressDisplay>
+            } else {
+                Box::new(ConsoleProgress::new()) as Box<dyn ProgressDisplay>
+            };
+            let buffer_size = reader.get_blocksize();
+            progress.update_status(&*format!("{} -> {}", source, args.dest));
+            let coroutine = async move {
+                copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
+            };
+            tokio_block_on(coroutine);
         } else {
-            Box::new(ConsoleProgress::new()) as Box<dyn ProgressDisplay>
-        };
-        let buffer_size = reader.get_blocksize();
-        progress.update_status(&*format!("{} -> {}", source, args.dest));
-        let coroutine = async move { 
-            copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
-        };
-        tokio_block_on(coroutine);
+            for object in FileReader::iter_directory(&source){
+                println!("{:?}", object);
+            }
+        }
     }
 }
