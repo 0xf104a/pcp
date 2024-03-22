@@ -52,6 +52,11 @@ impl Writer for FileWriter{
         std::path::Path::new(url).is_dir()
     }
 
+    #[inline]
+    fn make_directory(url: &str) where Self: Sized {
+        todo!()
+    }
+
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) {
         if chunk.len() == size {
             self.file.write(chunk).await.expect("Can not write file");

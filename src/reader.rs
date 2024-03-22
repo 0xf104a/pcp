@@ -2,8 +2,11 @@ pub mod file;
 
 use async_trait::async_trait;
 
+use crate::utils::generic_iterator::GenericIterator;
+
 #[async_trait]
 pub trait Reader{
+    
     /// 
     /// Checks that file/directory with given URL can be read by this implementation of reader
     /// # Arguments 
@@ -20,6 +23,7 @@ pub trait Reader{
     /// }
     /// ```
     fn can_read(url: &str) -> bool where Self: Sized;
+    
     /// 
     /// Creates new instance of reader from given URL
     /// # Arguments 
@@ -34,6 +38,7 @@ pub trait Reader{
     /// 
     /// ```
     fn new(url: &str) -> Self where Self: Sized;
+    
     /// 
     /// Checks that given URL is directory
     /// # Arguments 
@@ -48,6 +53,7 @@ pub trait Reader{
     ///  assert!(!MyReader::is_directory("scheme://path/to/some/file"));
     /// ```
     fn is_directory(url: &str) -> bool where Self: Sized;
+    
     ///
     /// Returns size of file
     ///
@@ -71,6 +77,12 @@ pub trait Reader{
     ///  let io_block_size = MyReader::new("scheme://path/to/file").get_blocksize();
     /// ```
     fn get_blocksize(&self) -> usize;
+    
+    ///
+    /// Creates directory iterator
+    /// 
+    fn iter_directory(&self, url: &str) -> Box<dyn GenericIterator<String>>;
+    
     ///
     /// Reads chunk from file. Chunk is limited by given 
     /// # Arguments 

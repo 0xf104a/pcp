@@ -8,5 +8,6 @@ pub trait Writer{
     fn new(url: &str) -> Self where Self: Sized; 
     fn can_write(url: &str) -> bool where Self: Sized;
     fn is_directory(url: &str) -> bool where Self: Sized;
+    fn make_directory(url: &str) where Self: Sized;
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize);
 }

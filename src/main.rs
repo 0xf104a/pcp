@@ -6,7 +6,7 @@ mod reader;
 mod writer;
 mod progress;
 mod copy;
-mod utils;
+pub mod utils;
 mod arguments;
 
 use crate::arguments::Args;
