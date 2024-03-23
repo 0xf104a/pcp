@@ -1,5 +1,4 @@
 use std::ffi::OsString;
-use std::os::linux::raw::stat;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use async_trait::async_trait;
@@ -31,7 +30,7 @@ impl DirectoryIteratorState {
                 .map(|x| {x.unwrap().path().into_os_string()})
                 .collect()
         };
-        println!("path {:?} has objects {:?}", path, objects);
+        //println!("path {:?} has objects {:?}", path, objects);
         DirectoryIteratorState{
             objects,
             current_object: 0,
@@ -69,31 +68,52 @@ impl DirectoryIterator{
     }
 }
 
+#[inline]
+fn convert_option_to_os_string(s: Option<String>) -> Option<OsString>{
+    if s.is_none(){
+        None
+    } else {
+        Some(OsString::from(&s.unwrap()))
+    }
+}
+
+#[inline]
+fn convert_option_to_string(s: Option<OsString>) -> Option<String>{
+    if s.is_none(){
+        None
+    } else {
+        Some(s.unwrap().into_string().unwrap())
+    }
+}
+
 impl GenericIterator<String> for DirectoryIterator{
     fn internal_next(&mut self) -> Option<String> {
         if self.state_stack.len() == 0{
             return None;
         }
         let mut next_object = self.state_stack.last_mut().unwrap().next_object();
-        println!("next_object={:?}", next_object);
+        //Òprintln!("next_object={:?}", next_object);
         while next_object.is_none() && self.state_stack.len() > 1{
             self.state_stack.pop();
             next_object = self.state_stack.last_mut().unwrap().next_object();
         }
         if next_object.is_none(){
-            println!("No more objects through stack");
+            //println!("No more objects through stack");
             return None;
         }
         let path_os_string = next_object.unwrap();
         let path_string = path_os_string.to_str().unwrap().to_string();
         let path = Path::new(&path_os_string);
         if path.is_dir(){
-            println!("{:?} is dir, {:?}", path, path_string);
+            //println!("{:?} is dir, {:?}", path, path_string);
             let mut state = DirectoryIteratorState::new(path_string);
-            let result = Some(state.next_object().unwrap().to_str().unwrap().to_string());
-            println!("result is {:?}", result);
+            let mut result = state.next_object();
+            if result.is_none(){
+                result = convert_option_to_os_string(self.internal_next());
+            }
+            //println!("result is {:?}", result);
             self.state_stack.push(state);
-            return result;
+            return convert_option_to_string(result);
         }
         Some(path_string)
     }
@@ -110,7 +130,7 @@ impl Reader for FileReader{
     }
     fn new(url: &str) -> Self where Self: Sized {
         if !Self::can_read(url){
-            panic!("Can not read url {url}");
+            //panic!("Can not read url {url}");
         }
         let open_coroutine = async {
             File::open(url).await

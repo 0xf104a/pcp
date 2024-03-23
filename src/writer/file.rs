@@ -16,10 +16,10 @@ pub struct FileWriter{
 impl Writer for FileWriter{
     fn new(url: &str) -> Self where Self: Sized {
         if !Self::can_write(url){
-            panic!("Can not read url {url}");
+            //panic!("Can not write url {url}");
         }
         let open_coroutine = async {
-            if std::path::Path::new(url).exists(){
+            if Path::new(url).exists(){
                 OpenOptions::new()
                     .write(true)
                     .create(true)
@@ -54,6 +54,7 @@ impl Writer for FileWriter{
     
     #[inline]
     fn make_directory(url: &str) where Self: Sized {
+        //println!("mkdir {:?}", url);
         std::fs::create_dir_all(Path::new(url)).expect("Can not create directory")
     }
 

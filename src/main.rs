@@ -1,5 +1,8 @@
+use std::ffi::OsStr;
 use std::process::exit;
-use clap::Parser;
+use std::path::{Component, Path, PathBuf};
+
+use clap::{arg, Parser};
 use colored::Colorize;
 
 mod reader;
@@ -20,7 +23,31 @@ use crate::utils::runtime::{init_tokio, tokio_block_on};
 use crate::copy as copy_file;
 use crate::progress::dummy::DummyProgress;
 
-
+pub fn copy_directory(source: &str, target: &str){
+    for object in FileReader::iter_directory(source){
+        let src_path = Path::new(&object);
+        let mut src_components = src_path.components();
+        let src_dir = src_components.next().unwrap();
+        let mut dst_path = PathBuf::new();
+        dst_path.push(Path::new(target));
+        for component in src_components{
+            dst_path.push(component);
+        }
+        let mut dst_dir = dst_path.clone();
+        dst_dir.pop();
+        FileWriter::make_directory(&dst_dir.to_str().unwrap());
+        let writer = Box::new(FileWriter::new(dst_path.to_str().unwrap()));
+        let reader = Box::new(FileReader::new(&object));
+        let mut progress = Box::new(ConsoleProgress::new()) as Box<dyn ProgressDisplay>;
+        progress.set_progress(&*format!("{} -> {}", object, dst_path
+            .to_str().unwrap()), 0);
+        let buffer_size = reader.get_blocksize();
+        let coroutine = async move {
+            copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
+        };
+        tokio_block_on(coroutine);
+    }
+}
 fn main() {
     let args = Args::parse();
     let mut sources = Vec::<String>::new();
@@ -61,9 +88,7 @@ fn main() {
             };
             tokio_block_on(coroutine);
         } else {
-            for object in FileReader::iter_directory(&source){
-                println!("{:?}", object);
-            }
+            copy_directory(&source, &args.dest);
         }
     }
 }
