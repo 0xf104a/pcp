@@ -2,6 +2,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub mod runtime;
 pub mod generic_iterator;
+pub mod term;
 
 #[inline]
 pub fn get_time() -> u128{

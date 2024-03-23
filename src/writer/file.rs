@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
+use std::process::exit;
 use async_trait::async_trait;
+use colored::Colorize;
 use regex::Regex;
 use tokio::fs::{File, OpenOptions};
 use tokio::io::AsyncWriteExt;
@@ -65,11 +67,11 @@ impl Writer for FileWriter{
         base_path.into_os_string().into_string().unwrap()
     }
 
-    async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) {
+    async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) -> std::io::Result<usize> {
         if chunk.len() == size {
-            self.file.write(chunk).await.expect("Can not write file");
+            self.file.write(chunk).await
         } else { //chunk.len() > size
-            self.file.write(&chunk[0..size]).await.expect("Can not write file");
+            self.file.write(&chunk[0..size]).await
         }
     }
 }

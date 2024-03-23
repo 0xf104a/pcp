@@ -1,3 +1,5 @@
+use std::process::exit;
+use colored::Colorize;
 use crate::progress::ProgressDisplay;
 use crate::reader::Reader;
 use crate::writer::Writer;
@@ -17,11 +19,23 @@ impl Buffer for DynBuffer{
         buffer
     }
 }
+#[inline]
+fn handle_error_if_needed(result: std::io::Result<usize>) -> bool{
+    if result.is_err(){
+        let error = result.err().unwrap();
+        crate::utils::term::flush();
+        println!("{}{}: {}", "Can not write destination".bold().red(), "".clear(),
+                 error.to_string());
+        true
+    } else { 
+        false
+    }
+}
 
 pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
             mut progress: Box<dyn ProgressDisplay>,
             max_chunks_staged: usize,
-            chunk_size: usize){
+            chunk_size: usize) -> bool{
     let (tx, mut rx) =
         tokio::sync::mpsc::channel::<Option<(usize, DynBuffer)>>(max_chunks_staged);
     let size = reader.get_size();
@@ -35,20 +49,29 @@ pub async fn copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
                 tx.send(None).await.expect("Can not send buffer");
                 break;
             }
-            tx.send(Some((bytes_read, buffer.clone()))).await.expect("Can not send buffer");
+            if tx.send(Some((bytes_read, buffer.clone()))).await.is_err(){
+                break;
+            }
         }
+        true
     };
     let write_coroutine = async move {
+        let mut result = true;
         loop  {
             let chunk_wrapped = rx.recv().await.unwrap();
             if chunk_wrapped.is_none(){
                 break;
             }
             let (n, chunk) = chunk_wrapped.unwrap();
-            writer.write_chunk(&chunk, n).await;
+            if handle_error_if_needed(writer.write_chunk(&chunk, n).await){
+                result = false;
+                break;
+            }
             progress.add_bytes_written(n);
         }
         progress.flush();
+        result
     };
-    let _ = tokio::join!(read_coroutine, write_coroutine);
+    let (result_read, result_write) = tokio::join!(read_coroutine, write_coroutine);
+    result_read && result_write
 }

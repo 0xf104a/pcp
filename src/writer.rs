@@ -32,5 +32,5 @@ pub trait Writer{
     /// assert_eq!(MyWriter::join_path(base, relative), "ftp://my-server/foo/bar/folder/file);
     /// ```
     fn join_path(base: &str, path: &str) -> String where Self: Sized;
-    async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize);
+    async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) -> std::io::Result<usize>;
 }

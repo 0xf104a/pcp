@@ -22,16 +22,24 @@ use crate::utils::runtime::{init_tokio, tokio_block_on};
 use crate::copy as copy_file;
 use crate::progress::dummy::DummyProgress;
 
-pub fn copy_directory(source: &str, target: &str){
+pub fn copy_directory(source: &str, target: &str) -> bool{
     let mut target_path = target.to_string();
-    if FileWriter::is_directory(target){
+    let is_new_dir = if FileWriter::is_directory(target){
         target_path = FileWriter::join_path(&target_path, &FileReader::dirname(source));
+        false
     } else {
         FileWriter::make_directory(target);
-    }
+        true
+    };
     for object in FileReader::iter_directory(source){
+        let target_object = if is_new_dir{
+            FileReader::relative_path(&FileReader::dirname(&source), &object)
+        } else { 
+            object.clone()
+        };
         let reader = Box::new(FileReader::new(&object));
-        let destination = FileWriter::join_path(&target_path, &object);
+        let destination = FileWriter::join_path(&target_path, &target_object);
+        //println!("target_path={}, object={}, dest={}", target_path, target_object, destination);
         let mut progress = Box::new(ConsoleProgress::new());
         let buffer_size = reader.get_blocksize();
         if FileReader::is_directory(&object){
@@ -41,10 +49,13 @@ pub fn copy_directory(source: &str, target: &str){
         let writer = Box::new(FileWriter::new(&destination));
         progress.set_progress(&*format!("{} -> {}", object, destination), 0);
         let coroutine = async move {
-            copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
+            copy_file::copy(reader, writer, progress, 1024, buffer_size).await
         };
-        tokio_block_on(coroutine);
+        if !tokio_block_on(coroutine){
+            return false;
+        }
     }
+    true
 }
 fn main() {
     let args = Args::parse();
@@ -82,11 +93,15 @@ fn main() {
             let buffer_size = reader.get_blocksize();
             progress.update_status(&*format!("{} -> {}", source, args.dest));
             let coroutine = async move {
-                copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
+                copy_file::copy(reader, writer, progress, 1024, buffer_size).await
             };
-            tokio_block_on(coroutine);
+            if !tokio_block_on(coroutine){
+                exit(255);
+            }
         } else {
-            copy_directory(&source, &args.dest);
+            if !copy_directory(&source, &args.dest){
+                exit(255);
+            }
         }
     }
 }

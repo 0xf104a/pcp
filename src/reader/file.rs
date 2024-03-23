@@ -92,7 +92,7 @@ impl GenericIterator<String> for DirectoryIterator{
             return None;
         }
         let mut next_object = self.state_stack.last_mut().unwrap().next_object();
-        //Òprintln!("next_object={:?}", next_object);
+        //println!("next_object={:?}", next_object);
         while next_object.is_none() && self.state_stack.len() > 1{
             self.state_stack.pop();
             next_object = self.state_stack.last_mut().unwrap().next_object();

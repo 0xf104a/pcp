@@ -96,13 +96,8 @@ impl ProgressDisplay for ConsoleProgress {
         self.print_progress();
     }
 
+    #[inline]
     fn flush(&self) {
-        let (size_rows, _) = terminal_size()
-            .expect("Can not read terminal size");
-        print!("\r");
-        for _ in 0..size_rows - 1{
-            print!(" ")
-        }
-        print!("\r");
+        crate::utils::term::flush();
     }
 }
