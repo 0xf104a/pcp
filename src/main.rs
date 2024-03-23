@@ -1,4 +1,3 @@
-use std::ffi::OsStr;
 use std::process::exit;
 use std::path::{Component, Path, PathBuf};
 

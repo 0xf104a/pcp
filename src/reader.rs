@@ -1,6 +1,8 @@
 pub mod file;
 
+use std::todo;
 use async_trait::async_trait;
+use futures::Stream;
 
 use crate::utils::generic_iterator::GenericIterator;
 
@@ -65,6 +67,7 @@ pub trait Reader{
     ///  let file_size = MyReader::new("scheme://path/to/file").get_blocksize();
     /// ```
     fn get_size(&self) -> usize;
+
     ///
     /// Gets blocksize for filesystem in which source file is stored
     /// # Arguments
@@ -82,10 +85,35 @@ pub trait Reader{
     /// Creates directory iterator
     /// 
     fn iter_directory(url: &str) -> Box<dyn GenericIterator<String>> where Self: Sized;
+
+    ///
+    /// Gets a relative path from URL given argument
+    ///
+    /// # Arguments
+    ///
+    /// * `src_arg`: str containing source directory
+    /// * `url`: str containing url from iter_directory
+    ///
+    /// # Examples
+    /// ```
+    /// let src_arg = "/tmp/foo";
+    /// let url = "/tmp/foo/bar/file";
+    ///
+    /// assert_eq!(MyReader::relative_path2(src_arg, url), "foo/bar/file");
+    ///```
+    ///
+    /// ```
+    /// let src_arg = "ftp://my-server/some-dir/foo";
+    /// let url = "ftp://my-server/some-dir/foo/bar/file";
+    ///
+    /// assert_eq!(MyFTPReader::relative_path2(src_arg, url), "foo/bar/file");
+    ///```
+    ///
+    fn relative_path(src_arg: &str, url: &str) -> String where Self: Sized;
     
     ///
     /// Reads chunk from file. Chunk is limited by given 
-    /// # Arguments 
+    /// # Arguments
     ///
     /// * `buffer`: Mutable reference to buffer where data would be put
     /// * `max_size`: Maximum amount of bytes to read
@@ -103,4 +131,5 @@ pub trait Reader{
     /// let bytes_read = reader.read_chunk(&mut buffer, 128).await;
     /// ```
     async fn read_chunk(&mut self, buffer: &mut [u8], max_size: usize) -> usize;
+
 }

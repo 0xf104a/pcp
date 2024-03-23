@@ -162,7 +162,33 @@ impl Reader for FileReader{
         Box::new(DirectoryIterator::new(url))
     }
 
+    #[inline]
+    fn relative_path(src_arg: &str, url: &str) -> String {
+        let src_path = Path::new(src_arg);
+        let url = Path::new(url);
+        url.strip_prefix(src_path).unwrap().to_str().unwrap().to_string()
+    }
+
     async fn read_chunk(&mut self, buffer: &mut [u8], _max_size: usize) -> usize {
         self.file.read(buffer).await.expect("Can not read file")
+    }
+}
+
+/* Tests */
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_relative_path() {
+        let src_arg = "/tmp/foo";
+        let url = "/tmp/foo/bar/file";
+        assert_eq!(FileReader::relative_path(src_arg, url), "bar/file");
+        let src_arg = "localdir/foo";
+        let url = "localdir/foo/bar/file";
+        assert_eq!(FileReader::relative_path(src_arg, url), "bar/file");
+        let src_arg = "/";
+        let url = "/tmp/foo/bar/file";
+        assert_eq!(FileReader::relative_path(src_arg, url), "tmp/foo/bar/file");
     }
 }
