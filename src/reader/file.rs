@@ -103,18 +103,6 @@ impl GenericIterator<String> for DirectoryIterator{
         }
         let path_os_string = next_object.unwrap();
         let path_string = path_os_string.to_str().unwrap().to_string();
-        let path = Path::new(&path_os_string);
-        if path.is_dir(){
-            //println!("{:?} is dir, {:?}", path, path_string);
-            let mut state = DirectoryIteratorState::new(path_string);
-            let mut result = state.next_object();
-            if result.is_none(){
-                result = convert_option_to_os_string(self.internal_next());
-            }
-            //println!("result is {:?}", result);
-            self.state_stack.push(state);
-            return convert_option_to_string(result);
-        }
         Some(path_string)
     }
 }
@@ -167,6 +155,12 @@ impl Reader for FileReader{
         let src_path = Path::new(src_arg);
         let url = Path::new(url);
         url.strip_prefix(src_path).unwrap().to_str().unwrap().to_string()
+    }
+
+    #[inline]
+    fn dirname(url: &str) -> String where Self: Sized {
+        let path = PathBuf::from(url);
+        path.iter().last().unwrap().to_str().unwrap().to_string()
     }
 
     async fn read_chunk(&mut self, buffer: &mut [u8], _max_size: usize) -> usize {

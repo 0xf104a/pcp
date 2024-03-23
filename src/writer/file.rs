@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use async_trait::async_trait;
 use regex::Regex;
 use tokio::fs::{File, OpenOptions};
@@ -56,6 +56,13 @@ impl Writer for FileWriter{
     fn make_directory(url: &str) where Self: Sized {
         //println!("mkdir {:?}", url);
         std::fs::create_dir_all(Path::new(url)).expect("Can not create directory")
+    }
+    
+    fn join_path(base: &str, path: &str) -> String where Self: Sized {
+        let mut base_path = PathBuf::from(base);
+        let relative_path = PathBuf::from(path);
+        base_path.extend(relative_path.iter());
+        base_path.into_os_string().into_string().unwrap()
     }
 
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) {

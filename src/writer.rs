@@ -9,5 +9,28 @@ pub trait Writer{
     fn can_write(url: &str) -> bool where Self: Sized;
     fn is_directory(url: &str) -> bool where Self: Sized;
     fn make_directory(url: &str) where Self: Sized;
+    
+    ///
+    /// Joins base path with relative path
+    /// 
+    /// # Arguments
+    /// * `base` path to base directory
+    /// * `path` relative path in directory
+    /// 
+    /// # Examples
+    /// ```
+    /// let base = "foo/bar";
+    /// let relative = "folder/file";
+    /// 
+    /// assert_eq!(MyWriter::join_path(base, relative), "foo/bar/folder/file);
+    /// ```
+    ///
+    /// ```
+    /// let base = "ftp://my-server/foo/bar";
+    /// let relative = "folder/file";
+    ///
+    /// assert_eq!(MyWriter::join_path(base, relative), "ftp://my-server/foo/bar/folder/file);
+    /// ```
+    fn join_path(base: &str, path: &str) -> String where Self: Sized;
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize);
 }

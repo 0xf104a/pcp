@@ -84,6 +84,9 @@ pub trait Reader{
     ///
     /// Creates directory iterator
     /// 
+    /// # Arguments
+    /// * `url`: url to directory
+    /// 
     fn iter_directory(url: &str) -> Box<dyn GenericIterator<String>> where Self: Sized;
 
     ///
@@ -110,6 +113,15 @@ pub trait Reader{
     ///```
     ///
     fn relative_path(src_arg: &str, url: &str) -> String where Self: Sized;
+    
+    ///
+    /// Gets dirname from URL of directory
+    /// 
+    /// # Arguments
+    /// 
+    /// * `url` url to extract dirname from
+    /// 
+    fn dirname(url: &str) -> String where Self: Sized;
     
     ///
     /// Reads chunk from file. Chunk is limited by given 

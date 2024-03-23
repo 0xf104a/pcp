@@ -23,24 +23,23 @@ use crate::copy as copy_file;
 use crate::progress::dummy::DummyProgress;
 
 pub fn copy_directory(source: &str, target: &str){
+    let mut target_path = target.to_string();
+    if FileWriter::is_directory(target){
+        target_path = FileWriter::join_path(&target_path, &FileReader::dirname(source));
+    } else {
+        FileWriter::make_directory(target);
+    }
     for object in FileReader::iter_directory(source){
-        let src_path = Path::new(&object);
-        let mut src_components = src_path.components();
-        let src_dir = src_components.next().unwrap();
-        let mut dst_path = PathBuf::new();
-        dst_path.push(Path::new(target));
-        for component in src_components{
-            dst_path.push(component);
-        }
-        let mut dst_dir = dst_path.clone();
-        dst_dir.pop();
-        FileWriter::make_directory(&dst_dir.to_str().unwrap());
-        let writer = Box::new(FileWriter::new(dst_path.to_str().unwrap()));
         let reader = Box::new(FileReader::new(&object));
-        let mut progress = Box::new(ConsoleProgress::new()) as Box<dyn ProgressDisplay>;
-        progress.set_progress(&*format!("{} -> {}", object, dst_path
-            .to_str().unwrap()), 0);
+        let destination = FileWriter::join_path(&target_path, &object);
+        let mut progress = Box::new(ConsoleProgress::new());
         let buffer_size = reader.get_blocksize();
+        if FileReader::is_directory(&object){
+            FileWriter::make_directory(&destination);
+            continue;
+        }
+        let writer = Box::new(FileWriter::new(&destination));
+        progress.set_progress(&*format!("{} -> {}", object, destination), 0);
         let coroutine = async move {
             copy_file::copy(reader, writer, progress, 1024, buffer_size).await;
         };
