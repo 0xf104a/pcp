@@ -1,8 +1,6 @@
 pub mod file;
 
-use std::todo;
 use async_trait::async_trait;
-use futures::Stream;
 
 use crate::utils::generic_iterator::GenericIterator;
 
@@ -124,7 +122,7 @@ pub trait Reader{
     fn dirname(url: &str) -> String where Self: Sized;
     
     ///
-    /// Reads chunk from file. Chunk is limited by given 
+    /// Reads chunk from file. Chunk is limited by given maximum size
     /// # Arguments
     ///
     /// * `buffer`: Mutable reference to buffer where data would be put

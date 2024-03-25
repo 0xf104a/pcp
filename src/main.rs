@@ -10,6 +10,7 @@ mod progress;
 mod copy;
 mod utils;
 mod arguments;
+mod factories;
 
 use crate::arguments::Args;
 use crate::writer::file::FileWriter;
