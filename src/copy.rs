@@ -4,7 +4,6 @@ use crate::arguments::Args;
 use crate::factories::{get_reader_proxy_for_url, get_writer_proxy_for_url};
 use crate::progress::console::ConsoleProgress;
 use crate::progress::ProgressDisplay;
-use crate::reader::file::FileReader;
 use crate::reader::Reader;
 use crate::utils::runtime::tokio_block_on;
 use crate::writer::Writer;
@@ -104,7 +103,7 @@ pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
     let writer_proxy = get_writer_proxy_for_url(target).unwrap();
     let reader_proxy = get_reader_proxy_for_url(source).unwrap();
     let is_new_dir = if writer_proxy.is_directory(target){
-        target_path = writer_proxy.join_path(&target_path, &FileReader::dirname(source));
+        target_path = writer_proxy.join_path(&target_path, &reader_proxy.dirname(source));
         false
     } else {
         writer_proxy.make_directory(target);
@@ -113,7 +112,7 @@ pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
     for object in reader_proxy.iter_directory(source){
         println!("{}", object);
         let target_object = if is_new_dir{
-            reader_proxy.relative_path(&FileReader::dirname(&source), &object)
+            reader_proxy.relative_path(&reader_proxy.dirname(&source), &object)
         } else {
             object.clone()
         };
