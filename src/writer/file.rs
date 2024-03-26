@@ -43,7 +43,7 @@ impl Writer for FileWriter{
 
     #[inline]
     fn can_write(url: &str) -> bool where Self: Sized {
-        let re = Regex::new(r"^(/[^/\\0]+)+/?$|^[^/\\0]+$").unwrap();
+        let re = Regex::new(r"^(/?[\w.-]+)+(/)?$").unwrap();
         re.is_match(url)
     }
 

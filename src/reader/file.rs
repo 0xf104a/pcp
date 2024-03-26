@@ -86,6 +86,9 @@ impl GenericIterator<String> for DirectoryIterator{
         }
         let path_os_string = next_object.unwrap();
         let path_string = path_os_string.to_str().unwrap().to_string();
+        if Path::new(&path_os_string).is_dir(){
+            self.state_stack.push(DirectoryIteratorState::new(path_string.clone()));
+        }
         Some(path_string)
     }
 }
@@ -96,7 +99,7 @@ impl GenericIterator<String> for DirectoryIterator{
 impl Reader for FileReader{
     #[inline]
     fn can_read(url: &str) -> bool where Self: Sized {
-        let re = Regex::new(r"^(/[^/\\0]+)+/?$|^[^/\\0]+$").unwrap();
+        let re = Regex::new(r"^(/?[\w.-]+)+(/)?$").unwrap();
         re.is_match(url)
     }
     fn new(url: &str) -> Self where Self: Sized {

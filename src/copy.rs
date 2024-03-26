@@ -3,6 +3,7 @@ use colored::Colorize;
 use crate::arguments::Args;
 use crate::factories::{get_reader_proxy_for_url, get_writer_proxy_for_url};
 use crate::progress::console::ConsoleProgress;
+use crate::progress::dummy::DummyProgress;
 use crate::progress::ProgressDisplay;
 use crate::reader::Reader;
 use crate::utils::runtime::tokio_block_on;
@@ -33,6 +34,14 @@ fn handle_error_if_needed(result: std::io::Result<usize>) -> bool{
         true
     } else { 
         false
+    }
+}
+
+fn get_progress_from_args(args: &Args) -> Box<dyn ProgressDisplay>{
+    if args.no_progress{
+        Box::new(DummyProgress::new())
+    } else {
+        Box::new(ConsoleProgress::new())
     }
 }
 
@@ -83,7 +92,7 @@ async fn do_copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
 pub fn copy_file(source: &str, target: &str, args: &Args) -> bool{
     let writer_proxy = get_writer_proxy_for_url(target).unwrap();
     let reader_proxy = get_reader_proxy_for_url(source).unwrap();
-    let mut progress = Box::new(ConsoleProgress::new());
+    let mut progress = get_progress_from_args(args);
     let mut str_target = target.to_string();
     if writer_proxy.is_directory(target){
         let filename = reader_proxy.filename(source);
@@ -110,7 +119,7 @@ pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
         true
     };
     for object in reader_proxy.iter_directory(source){
-        println!("{}", object);
+        //println!("{}", object);
         let target_object = if is_new_dir{
             reader_proxy.relative_path(&reader_proxy.dirname(&source), &object)
         } else {
@@ -119,7 +128,7 @@ pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
         let reader = reader_proxy.produce(&object);
         let destination = writer_proxy.join_path(&target_path, &target_object);
         //println!("target_path={}, object={}, dest={}", target_path, target_object, destination);
-        let mut progress = Box::new(ConsoleProgress::new());
+        let mut progress = get_progress_from_args(args);
         let buffer_size = reader.get_blocksize();
         if reader_proxy.is_directory(&object){
             writer_proxy.make_directory(&destination);
