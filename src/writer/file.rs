@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use async_trait::async_trait;
+use colored::Colorize;
 use regex::Regex;
 use tokio::fs::{File, OpenOptions};
 use tokio::io::AsyncWriteExt;
@@ -40,11 +41,27 @@ impl Writer for FileWriter{
             file: tokio_block_on(open_coroutine).expect("Can not open file"),
         }
     }
-
-    #[inline]
+    
     fn can_write(url: &str) -> bool where Self: Sized {
         let re = Regex::new(r"^(/?[\w.-]+)+(/)?$").unwrap();
-        re.is_match(url)
+        if !re.is_match(url){
+            return false;
+        }
+        let path = PathBuf::from(url);
+        if path.is_dir() || url.bytes().last().unwrap() == '/' as u8{
+            if !path.exists(){
+                println!("{}{}: No such directory", url.bold().red(), "".clear());
+                return false;
+            }
+            return true;
+        }
+        let dir = path.parent().unwrap();
+        if dir.is_dir() || dir.to_str().unwrap() == ""{
+            true
+        } else {
+            println!("{}{}: No such directory", url.bold().red(), "".clear());
+            false
+        }
     }
 
     #[inline]

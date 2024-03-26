@@ -1,11 +1,14 @@
 use std::ffi::OsString;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
+
 use async_trait::async_trait;
-use crate::reader::Reader;
 use tokio::fs::File;
 use regex::Regex;
 use tokio::io::AsyncReadExt;
+use colored::Colorize;
+
+use crate::reader::Reader;
 use crate::utils::generic_iterator::GenericIterator;
 use crate::utils::runtime::tokio_block_on;
 
@@ -97,10 +100,16 @@ impl GenericIterator<String> for DirectoryIterator{
 
 #[async_trait]
 impl Reader for FileReader{
-    #[inline]
     fn can_read(url: &str) -> bool where Self: Sized {
         let re = Regex::new(r"^(/?[\w.-]+)+(/)?$").unwrap();
-        re.is_match(url)
+        if !re.is_match(url){
+            return false
+        }
+        if !Path::new(url).is_file(){
+            println!("{}:{} No such file", url.bold().red(), "".clear());
+            return false;
+        }
+        true
     }
     fn new(url: &str) -> Self where Self: Sized {
         if !Self::can_read(url){

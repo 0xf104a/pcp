@@ -27,14 +27,14 @@ fn main() {
     let mut sources = Vec::<String>::new();
     let writer_proxy = get_writer_proxy_for_url(&args.dest);
     if writer_proxy.is_none(){
-        println!("{}No writer found for: {}{}", "".red().bold(), "".clear(), args.dest);
+        println!("{}: {}No writer for URL", args.dest.red().bold(), "".clear());
         exit(255);
     }
     let writer_proxy = writer_proxy.unwrap();
     for source in args.srcs {
-        let reader_proxy = get_reader_proxy_for_url(&args.dest);
+        let reader_proxy = get_reader_proxy_for_url(&source);
         if reader_proxy.is_none(){
-            println!("{}No reader found for: {}{}", "".red().bold(), "".clear(), source);
+            println!("{}: {}No reader for URL", source.red().bold(), "".clear());
             if args.fail_fast{
                 exit(255);
             }
