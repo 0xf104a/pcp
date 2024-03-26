@@ -1,6 +1,6 @@
 [package]
 name = "pretty-copy"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Anna-Sophie Zaitsewa"]
 description = "Multi-purpose copying utility which allows to see progress of copying operations"

@@ -4,7 +4,7 @@ use clap::Parser;
 pub(crate) struct Args {
     #[arg(short = 'r', long = "recursive", help = "Copy directories recursively")]
     pub recursive: bool,
-    #[arg(long = "no-progress", help = "Do not show progress")]
+    #[arg(short = 's', long = "no-progress", help = "Do not show progress")]
     pub no_progress: bool,
     #[arg(help = "Source file/directories", required = true)]
     pub srcs: Vec<String>,
