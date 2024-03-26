@@ -162,7 +162,7 @@ pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
         let target_object = if is_new_dir{
             reader_proxy.relative_path(&reader_proxy.dirname(&source), &object)
         } else {
-            object.clone()
+            reader_proxy.relative_path(&source, &object)
         };
         let reader = reader_proxy.produce(&object);
         let destination = writer_proxy.join_path(&target_path, &target_object);

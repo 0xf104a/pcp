@@ -106,8 +106,9 @@ impl Reader for FileReader{
         if !re.is_match(url){
             return false
         }
-        if !Path::new(url).is_file(){
-            println!("{}:{} No such file", url.bold().red(), "".clear());
+        let path = Path::new(url);
+        if !path.is_file() && !path.is_dir(){
+            println!("{}:{} No such file or directory", url.bold().red(), "".clear());
             return false;
         }
         true
