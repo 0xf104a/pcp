@@ -2,6 +2,7 @@ pub mod file;
 
 use async_trait::async_trait;
 use crate::copy::DynBuffer;
+use crate::factories::WRITER_FACTORY;
 
 #[async_trait]
 pub trait Writer{
@@ -33,4 +34,10 @@ pub trait Writer{
     /// ```
     fn join_path(base: &str, path: &str) -> String where Self: Sized;
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) -> std::io::Result<usize>;
+}
+
+//FUTURE: refactor this to be done via macros
+pub fn register_writers(){
+    let mut factory = WRITER_FACTORY.lock().unwrap();
+    factory.add_writer::<crate::writer::file::FileWriter>("file");
 }

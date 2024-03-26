@@ -1,7 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::process::exit;
 use async_trait::async_trait;
-use colored::Colorize;
 use regex::Regex;
 use tokio::fs::{File, OpenOptions};
 use tokio::io::AsyncWriteExt;
@@ -10,7 +8,7 @@ use crate::utils::runtime::tokio_block_on;
 use crate::writer::Writer;
 
 pub struct FileWriter{
-    path: String,
+    _path: String,
     file: File,
 }
 
@@ -38,7 +36,7 @@ impl Writer for FileWriter{
         };
 
        FileWriter {
-            path: String::from(url),
+            _path: String::from(url),
             file: tokio_block_on(open_coroutine).expect("Can not open file"),
         }
     }

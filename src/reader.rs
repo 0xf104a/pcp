@@ -1,6 +1,7 @@
 pub mod file;
 
 use async_trait::async_trait;
+use crate::factories::READER_FACTORY;
 
 use crate::utils::generic_iterator::GenericIterator;
 
@@ -120,6 +121,15 @@ pub trait Reader{
     /// * `url` url to extract dirname from
     /// 
     fn dirname(url: &str) -> String where Self: Sized;
+
+    ///
+    /// Gets filename from URL 
+    ///
+    /// # Arguments
+    ///
+    /// * `url` url to extract filename from
+    ///
+    fn filename(url: &str) -> String where Self: Sized;
     
     ///
     /// Reads chunk from file. Chunk is limited by given maximum size
@@ -142,4 +152,10 @@ pub trait Reader{
     /// ```
     async fn read_chunk(&mut self, buffer: &mut [u8], max_size: usize) -> usize;
 
+}
+
+//FUTURE: refactor this to be done via macros
+pub fn register_readers(){
+    let mut factory = READER_FACTORY.lock().unwrap();
+    factory.add_reader::<crate::reader::file::FileReader>("file");
 }

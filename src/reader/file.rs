@@ -17,7 +17,7 @@ pub struct FileReader{
 struct DirectoryIteratorState{
     objects: Vec<OsString>,
     current_object: usize,
-    full_path: OsString,
+    _full_path: OsString,
 }
 
 impl DirectoryIteratorState {
@@ -34,11 +34,12 @@ impl DirectoryIteratorState {
         DirectoryIteratorState{
             objects,
             current_object: 0,
-            full_path: OsString::from(&path),
+            _full_path: OsString::from(&path),
         }
     }
 
     #[inline]
+    #[allow(dead_code)]
     pub fn len(&self) -> usize{
         self.objects.len()
     }
@@ -55,34 +56,16 @@ impl DirectoryIteratorState {
 }
 
 struct DirectoryIterator {
-    base_directory: String,
+    _base_directory: String,
     state_stack: Vec<DirectoryIteratorState>,
 }
 
 impl DirectoryIterator{
     pub fn new(url: &str) -> DirectoryIterator{
         DirectoryIterator{
-            base_directory: url.to_string(),
+            _base_directory: url.to_string(),
             state_stack: vec![DirectoryIteratorState::new(url.to_string())],
         }
-    }
-}
-
-#[inline]
-fn convert_option_to_os_string(s: Option<String>) -> Option<OsString>{
-    if s.is_none(){
-        None
-    } else {
-        Some(OsString::from(&s.unwrap()))
-    }
-}
-
-#[inline]
-fn convert_option_to_string(s: Option<OsString>) -> Option<String>{
-    if s.is_none(){
-        None
-    } else {
-        Some(s.unwrap().into_string().unwrap())
     }
 }
 
@@ -159,6 +142,12 @@ impl Reader for FileReader{
 
     #[inline]
     fn dirname(url: &str) -> String where Self: Sized {
+        let path = PathBuf::from(url);
+        path.iter().last().unwrap().to_str().unwrap().to_string()
+    }
+
+    #[inline]
+    fn filename(url: &str) -> String where Self: Sized {
         let path = PathBuf::from(url);
         path.iter().last().unwrap().to_str().unwrap().to_string()
     }
