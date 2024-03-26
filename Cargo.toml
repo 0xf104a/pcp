@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Anna-Sophie Zaitsewa"]
 description = "Multi-purpose copying utility which allows to see progress of copying operations"
 license-file = "LICENSE"
-license = "GPL-3"
+license = "GPL-3.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
