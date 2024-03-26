@@ -4,6 +4,9 @@ pub mod runtime;
 pub mod generic_iterator;
 pub mod term;
 
+///
+/// Gets precise time in milliseconds
+/// 
 #[inline]
 pub fn get_time() -> u128{
     let start = SystemTime::now();

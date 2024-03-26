@@ -12,6 +12,7 @@ use crate::reader::Reader;
 use crate::utils::generic_iterator::GenericIterator;
 use crate::utils::runtime::tokio_block_on;
 
+/// Implements standard file reading from local FS
 pub struct FileReader{
     path: String,
     file: File,

@@ -32,12 +32,7 @@ pub trait Reader{
     /// * `url`: URL of file to read
     /// 
     /// returns: Self 
-    /// 
-    /// # Examples 
-    /// 
-    /// ```
-    /// 
-    /// ```
+    ///
     fn new(url: &str) -> Self where Self: Sized;
     
     /// 

@@ -1,5 +1,6 @@
 use termion::terminal_size;
 
+/// Cleans last line of terminal
 #[inline]
 pub fn flush() {
     let (size_rows, _) = terminal_size()

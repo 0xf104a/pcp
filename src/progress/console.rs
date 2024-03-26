@@ -8,6 +8,7 @@ use crate::utils::get_time;
 const MAX_STATUS_WIDTH: u16 = 128;
 const STATUS_WIDTH_FACTOR: f32 = 0.2;
 
+/// Implements simple progress for console
 pub struct ConsoleProgress{
     bytes_total: usize,
     bytes_out: usize,

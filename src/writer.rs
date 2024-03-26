@@ -53,14 +53,14 @@ pub trait Writer{
     /// let base = "foo/bar";
     /// let relative = "folder/file";
     /// 
-    /// assert_eq!(MyWriter::join_path(base, relative), "foo/bar/folder/file);
+    /// assert_eq!(MyWriter::join_path(base, relative), "foo/bar/folder/file");
     /// ```
     ///
     /// ```
     /// let base = "ftp://my-server/foo/bar";
     /// let relative = "folder/file";
     ///
-    /// assert_eq!(MyWriter::join_path(base, relative), "ftp://my-server/foo/bar/folder/file);
+    /// assert_eq!(MyWriter::join_path(base, relative), "ftp://my-server/foo/bar/folder/file");
     /// ```
     fn join_path(base: &str, path: &str) -> String where Self: Sized;
     

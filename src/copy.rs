@@ -9,9 +9,26 @@ use crate::reader::Reader;
 use crate::utils::runtime::tokio_block_on;
 use crate::writer::Writer;
 
+/// Buffer for file chunks
 pub type DynBuffer = Vec<u8>;
 
+
+/// Generalizes buffer creation
 trait Buffer{
+    
+    /// 
+    /// Creates a buffer of given size
+    /// # Arguments 
+    /// 
+    /// * `size`: size of buffer
+    /// 
+    /// returns: Self 
+    /// 
+    /// # Examples 
+    /// 
+    /// ```
+    /// let mut buffer = MyBuffer::make_buffer(1024);
+    /// ```
     fn make_buffer(size: usize) -> Self where Self: Sized;
 }
 
@@ -89,6 +106,17 @@ async fn do_copy(mut reader: Box<dyn Reader>, mut writer: Box<dyn Writer>,
     result_read && result_write
 }
 
+/// 
+/// Copies file
+/// 
+/// # Arguments 
+/// 
+/// * `source`: source file
+/// * `target`: target file
+/// * `args`: arguments
+/// 
+/// returns: bool: whether copy was successful
+///
 pub fn copy_file(source: &str, target: &str, args: &Args) -> bool{
     let writer_proxy = get_writer_proxy_for_url(target).unwrap();
     let reader_proxy = get_reader_proxy_for_url(source).unwrap();
@@ -107,6 +135,17 @@ pub fn copy_file(source: &str, target: &str, args: &Args) -> bool{
 
 }
 
+/// 
+/// Copies directory
+/// 
+/// # Arguments 
+/// 
+/// * `source`: source directory
+/// * `target`: target directory
+/// * `args`: program-wide arguments
+/// 
+/// returns: bool: whether copy was successful
+///
 pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
     let mut target_path = target.to_string();
     let writer_proxy = get_writer_proxy_for_url(target).unwrap();

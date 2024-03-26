@@ -8,6 +8,9 @@ use crate::copy::DynBuffer;
 use crate::utils::runtime::tokio_block_on;
 use crate::writer::Writer;
 
+///
+/// Implements standard writing for files in local FS
+/// 
 pub struct FileWriter{
     _path: String,
     file: File,

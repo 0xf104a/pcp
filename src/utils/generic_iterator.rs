@@ -4,9 +4,9 @@
 pub trait GenericIterator<T>{
     ///
     /// Produce next object or tell that sequence is stopped
-    /// 
+    ///
     /// # Returns
-    /// Option<T>: 
+    /// `Option<T>`:
     ///    * Some(T) if there is next element in sequence
     ///    * None if there is no more elements in sequence
     /// 

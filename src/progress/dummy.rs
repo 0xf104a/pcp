@@ -1,5 +1,6 @@
 use crate::progress::ProgressDisplay;
 
+/// Progress which is never displayed in any way
 pub struct DummyProgress{}
 
 impl ProgressDisplay for DummyProgress{
