@@ -3,7 +3,7 @@ use colored::Colorize;
 use termion::terminal_size;
 
 use crate::progress::ProgressDisplay;
-use crate::utils::get_time;
+use crate::utils::{get_time, safe_string_trim_left, safe_string_trim_right};
 
 const MAX_STATUS_WIDTH: u16 = 128;
 const STATUS_WIDTH_FACTOR: f32 = 0.2;
@@ -26,7 +26,8 @@ fn pad_status(status: String, max_width: u16) -> String {
         }
         let half_width = (max_width - 3) / 2;
         let end_start = status_len - half_width + (max_width - 3) % 2;
-        return format!("{}...{}", &status[..half_width], &status[end_start..]);
+        return format!("{}...{}", safe_string_trim_left(status.clone(), half_width), 
+                       safe_string_trim_right(status.clone(), end_start));
     }
 
     format!("{:width$}", status, width = max_width)

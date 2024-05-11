@@ -129,7 +129,8 @@ impl Reader for FileReader{
 
     #[inline]
     fn is_directory(url: &str) -> bool where Self: Sized {
-        std::path::Path::new(url).is_dir()
+        let path = Path::new(url);
+        path.is_dir() && path.exists()
     }
 
     fn get_size(&self) -> usize {
@@ -187,5 +188,18 @@ mod tests {
         let src_arg = "/";
         let url = "/tmp/foo/bar/file";
         assert_eq!(FileReader::relative_path(src_arg, url), "tmp/foo/bar/file");
+    }
+
+    #[test]
+    fn test_relative_path_unicode() {
+        let src_arg = "/tmp/документи";
+        let url = "/tmp/документи/bar/file";
+        assert_eq!(FileReader::relative_path(src_arg, url), "bar/file");
+        let src_arg = "localdir/документи";
+        let url = "localdir/документи/bar/file";
+        assert_eq!(FileReader::relative_path(src_arg, url), "bar/file");
+        let src_arg = "/";
+        let url = "/tmp/документи/bar/file";
+        assert_eq!(FileReader::relative_path(src_arg, url), "tmp/документи/bar/file");
     }
 }

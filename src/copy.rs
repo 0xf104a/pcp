@@ -152,6 +152,7 @@ pub fn copy_directory(source: &str, target: &str, args: &Args) -> bool{
     let reader_proxy = get_reader_proxy_for_url(source).unwrap();
     let is_new_dir = if writer_proxy.is_directory(target){
         target_path = writer_proxy.join_path(&target_path, &reader_proxy.dirname(source));
+        writer_proxy.make_directory(&target_path);
         false
     } else {
         writer_proxy.make_directory(target);
