@@ -16,6 +16,12 @@ pub struct FileWriter{
     file: File,
 }
 
+#[inline]
+fn check_valid_url(url: &str) -> bool {
+    let re = Regex::new(r"^(/?[\s\w'.-]+)+(/)?$").unwrap();
+    re.is_match(url)
+}
+
 #[async_trait]
 impl Writer for FileWriter{
     fn new(url: &str) -> Self where Self: Sized {
@@ -46,8 +52,7 @@ impl Writer for FileWriter{
     }
     
     fn can_write(url: &str) -> bool where Self: Sized {
-        let re = Regex::new(r"^(/?[\w.-]+)+(/)?$").unwrap();
-        if !re.is_match(url){
+        if !check_valid_url(url){
             return false;
         }
         let path = PathBuf::from(url);

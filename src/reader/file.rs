@@ -13,29 +13,29 @@ use crate::utils::generic_iterator::GenericIterator;
 use crate::utils::runtime::tokio_block_on;
 
 /// Implements standard file reading from local FS
-pub struct FileReader{
+pub struct FileReader {
     path: String,
     file: File,
 }
 
-struct DirectoryIteratorState{
+struct DirectoryIteratorState {
     objects: Vec<OsString>,
     current_object: usize,
     _full_path: OsString,
 }
 
 impl DirectoryIteratorState {
-    pub fn new(path: String) -> DirectoryIteratorState{
+    pub fn new(path: String) -> DirectoryIteratorState {
         let path = Path::new(&path);
-        let objects = if path.is_file(){
+        let objects = if path.is_file() {
             vec![OsString::from(&path)]
         } else {
             std::fs::read_dir(path).expect("Can not read directory")
-                .map(|x| {x.unwrap().path().into_os_string()})
+                .map(|x| { x.unwrap().path().into_os_string() })
                 .collect()
         };
         //println!("path {:?} has objects {:?}", path, objects);
-        DirectoryIteratorState{
+        DirectoryIteratorState {
             objects,
             current_object: 0,
             _full_path: OsString::from(&path),
@@ -44,12 +44,12 @@ impl DirectoryIteratorState {
 
     #[inline]
     #[allow(dead_code)]
-    pub fn len(&self) -> usize{
+    pub fn len(&self) -> usize {
         self.objects.len()
     }
 
-    pub fn next_object(&mut self) -> Option<OsString>{
-        if self.current_object >= self.objects.len(){
+    pub fn next_object(&mut self) -> Option<OsString> {
+        if self.current_object >= self.objects.len() {
             None
         } else {
             let result = Some(self.objects[self.current_object].clone());
@@ -64,33 +64,33 @@ struct DirectoryIterator {
     state_stack: Vec<DirectoryIteratorState>,
 }
 
-impl DirectoryIterator{
-    pub fn new(url: &str) -> DirectoryIterator{
-        DirectoryIterator{
+impl DirectoryIterator {
+    pub fn new(url: &str) -> DirectoryIterator {
+        DirectoryIterator {
             _base_directory: url.to_string(),
             state_stack: vec![DirectoryIteratorState::new(url.to_string())],
         }
     }
 }
 
-impl GenericIterator<String> for DirectoryIterator{
+impl GenericIterator<String> for DirectoryIterator {
     fn internal_next(&mut self) -> Option<String> {
-        if self.state_stack.len() == 0{
+        if self.state_stack.len() == 0 {
             return None;
         }
         let mut next_object = self.state_stack.last_mut().unwrap().next_object();
         //println!("next_object={:?}", next_object);
-        while next_object.is_none() && self.state_stack.len() > 1{
+        while next_object.is_none() && self.state_stack.len() > 1 {
             self.state_stack.pop();
             next_object = self.state_stack.last_mut().unwrap().next_object();
         }
-        if next_object.is_none(){
+        if next_object.is_none() {
             //println!("No more objects through stack");
             return None;
         }
         let path_os_string = next_object.unwrap();
         let path_string = path_os_string.to_str().unwrap().to_string();
-        if Path::new(&path_os_string).is_dir(){
+        if Path::new(&path_os_string).is_dir() {
             self.state_stack.push(DirectoryIteratorState::new(path_string.clone()));
         }
         Some(path_string)
@@ -98,30 +98,34 @@ impl GenericIterator<String> for DirectoryIterator{
 }
 
 
+#[inline]
+fn check_valid_url(url: &str) -> bool {
+    let re = Regex::new(r"^(/?[\s\w'.-]+)+(/)?$").unwrap();
+    re.is_match(url)
+}
 
 #[async_trait]
-impl Reader for FileReader{
+impl Reader for FileReader {
     fn can_read(url: &str) -> bool where Self: Sized {
-        let re = Regex::new(r"^(/?[\w.-]+)+(/)?$").unwrap();
-        if !re.is_match(url){
-            return false
+        if !check_valid_url(url) {
+            return false;
         }
         let path = Path::new(url);
-        if !path.is_file() && !path.is_dir(){
+        if !path.is_file() && !path.is_dir() {
             println!("{}:{} No such file or directory", url.bold().red(), "".clear());
             return false;
         }
         true
     }
     fn new(url: &str) -> Self where Self: Sized {
-        if !Self::can_read(url){
+        if !Self::can_read(url) {
             //panic!("Can not read url {url}");
         }
         let open_coroutine = async {
             File::open(url).await
         };
-        
-        FileReader{
+
+        FileReader {
             path: String::from(url),
             file: tokio_block_on(open_coroutine).expect("Can not open file"),
         }
@@ -144,7 +148,7 @@ impl Reader for FileReader{
     }
 
     #[inline]
-    fn iter_directory(url: &str) -> Box<dyn GenericIterator<String>>{
+    fn iter_directory(url: &str) -> Box<dyn GenericIterator<String>> {
         Box::new(DirectoryIterator::new(url))
     }
 
@@ -201,5 +205,16 @@ mod tests {
         let src_arg = "/";
         let url = "/tmp/документи/bar/file";
         assert_eq!(FileReader::relative_path(src_arg, url), "tmp/документи/bar/file");
+    }
+
+    #[test]
+    fn test_url_verifier() {
+        assert!(check_valid_url("The Folder/The File"));
+        assert!(check_valid_url("Teka/Łukasz"));
+        assert!(check_valid_url("/home/Łukasz/Pobrane/file.txt"));
+        assert!(check_valid_url("just_file_name"));
+        assert!(check_valid_url("просто_файл"));
+        assert!(check_valid_url("file' name"));
+        assert!(!check_valid_url("F:\\windows\\not_supported"));
     }
 }
