@@ -91,10 +91,18 @@ impl Writer for FileWriter{
     }
 
     async fn write_chunk(&mut self, chunk: &DynBuffer, size: usize) -> std::io::Result<usize> {
-        if chunk.len() == size {
+        let write_result = if chunk.len() == size {
             self.file.write(chunk).await
         } else { //chunk.len() > size
             self.file.write(&chunk[0..size]).await
+        };
+        if write_result.is_err(){
+            return write_result;
         }
+        let sync_result = self.file.sync_all().await;
+        if sync_result.is_err(){
+            return Err(std::io::Error::last_os_error());
+        }
+        write_result
     }
 }
